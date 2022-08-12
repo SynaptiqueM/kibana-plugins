@@ -48,7 +48,7 @@ import { HeaderNavControls } from './header_nav_controls';
 import { HeaderActionMenu } from './header_action_menu';
 import { HeaderExtension } from './header_extension';
 import { HeaderTopBanner } from './header_top_banner';
-import { HeaderOnboardingButton } from './header_onboarding_button';
+import { HeaderOnboardingButton } from './guided_onboarding';
 
 export interface HeaderProps {
   kibanaVersion: string;

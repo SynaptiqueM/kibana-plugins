@@ -6,7 +6,7 @@
  * Side Public License, v 1.
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { css } from '@emotion/react';
 import {
   EuiPopover,
@@ -30,56 +30,42 @@ import {
 
 import type { HttpStart } from '@kbn/core-http-browser';
 
-type OnboardingGuide = 'observability' | 'security' | 'search';
+import { GuideConfig, guidesConfig, StepStatus } from './guides_config';
 
-interface OnboardingSteps {
-  title: string;
-  url: string;
-  description: string;
-  status: 'incomplete' | 'complete' | 'in_progress';
+interface GuidedOnboardingState {
+  active_guide: string;
+  active_step: string;
 }
 
-// Expected data structure
-const onboardingSteps: OnboardingSteps[] = [
-  {
-    title: 'Monitor your environment',
-    url: '/',
-    description:
-      'Adding data is fast and easy with our out-of-the-box integrations. Quickly monitor popular cloud services, applications, systems, containers, and more.',
-    status: 'complete',
-  },
-  {
-    title: 'Tour Elastic Observability',
-    url: '/',
-    description:
-      'See how you can easily unlock the power of the Elastic search platform to query your logs, view your infrastructure, monitor your applications, visualize your data, and more.',
-    status: 'in_progress',
-  },
-  {
-    title: 'Collaborate with your team',
-    url: '/',
-    description: 'Invite your teammates and explore Elastic together.',
-    status: 'incomplete',
-  },
-  {
-    title: 'Do more with Observability',
-    url: '/',
-    description:
-      'See how you can enhance visibility into your environment with capabilities from Elastic like Application Performance Monitoring (APM), Uptime Monitoring, and more.',
-    status: 'incomplete',
-  },
-];
+const getConfig = (state?: GuidedOnboardingState): GuideConfig | undefined => {
+  if (!state) {
+    return undefined;
+  }
+  return guidesConfig.find((guide) => guide.useCase === state.active_guide);
+};
+
+const getStepStatus = (stepIndex: number, activeStep?: string): StepStatus => {
+  if (isNaN(Number(activeStep))) {
+    return 'incomplete';
+  }
+  if (Number(activeStep) === stepIndex + 1 || (Number(activeStep) < 1 && stepIndex === 0)) {
+    return 'in_progress';
+  }
+  return Number(activeStep) > stepIndex + 1 ? 'complete' : 'incomplete';
+};
 
 export const HeaderOnboardingButton = ({ http }: { http: HttpStart }) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [activeGuide, setActiveGuide] = useState<OnboardingGuide | undefined>(undefined);
+  const [guidedOnboardingState, setGuidedOnboardingState] = useState<
+    GuidedOnboardingState | undefined
+  >(undefined);
 
-  console.log({ http });
-  http.get('/api/guided_onboarding/state').then((res) => {
-    // Use the core notifications service to display a success message.
+  useEffect(() => {
+    http.get<{ state: GuidedOnboardingState }>('/api/guided_onboarding/state').then((res) => {
+      setGuidedOnboardingState(res.state);
+    });
+  }, [http, setGuidedOnboardingState]);
 
-    setActiveGuide(res.state.active_guide);
-  });
   const { euiTheme } = useEuiTheme();
 
   const togglePopover = () => {
@@ -90,7 +76,7 @@ export const HeaderOnboardingButton = ({ http }: { http: HttpStart }) => {
     width: 400px;
   `;
 
-  const statusCircleCss = ({ status }: { status: OnboardingSteps['status'] }) => css`
+  const statusCircleCss = ({ status }: { status: StepStatus }) => css`
     width: 24px;
     height: 24px;
     border-radius: 32px;
@@ -102,23 +88,20 @@ export const HeaderOnboardingButton = ({ http }: { http: HttpStart }) => {
     `}
   `;
 
-  return (
+  const guideConfig = getConfig(guidedOnboardingState);
+
+  return guideConfig ? (
     <EuiPopover
       button={
-        <EuiButton
-          iconType="arrowDown"
-          iconSide="right"
-          onClick={togglePopover}
-          color="success"
-          fill
-          isDisabled={!activeGuide}
-        >
+        <EuiButton onClick={togglePopover} color="success" fill>
           Guided setup
         </EuiButton>
       }
       isOpen={isPopoverOpen}
       closePopover={() => setIsPopoverOpen(false)}
-      anchorPosition="downCenter"
+      anchorPosition="downRight"
+      hasArrow={false}
+      offset={10}
     >
       <EuiPopoverTitle>
         <EuiFlexGroup direction="column" gutterSize="s" alignItems="baseline">
@@ -134,7 +117,7 @@ export const HeaderOnboardingButton = ({ http }: { http: HttpStart }) => {
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
             <EuiTitle size="s">
-              <h3>Guide for {activeGuide}</h3>
+              <h3>{guideConfig?.title}</h3>
             </EuiTitle>
           </EuiFlexItem>
         </EuiFlexGroup>
@@ -142,24 +125,21 @@ export const HeaderOnboardingButton = ({ http }: { http: HttpStart }) => {
 
       <div css={popoverContainerCss}>
         <EuiText>
-          <p>
-            {`We'll help you quickly gain visibility into your environment using Elastic's
-            out-of-the-box integrations. Gain deep insights from your logs, metrics, and traces, and
-            proactively detect issues and take action.`}
-          </p>
+          <p>{guideConfig?.description}</p>
         </EuiText>
         <EuiSpacer />
         <EuiProgress label="Progress" value={40} max={100} size="l" valueText />
         <EuiSpacer />
-        {onboardingSteps.map((step, index) => {
+        {guideConfig?.steps.map((step, index) => {
           const accordionId = htmlIdGenerator(`accordion${index}`)();
 
+          const stepStatus = getStepStatus(index, guidedOnboardingState?.active_step);
           const buttonContent = (
             <EuiFlexGroup gutterSize="s">
               <EuiFlexItem grow={false}>
-                <span css={statusCircleCss({ status: step.status })} className="eui-textCenter">
-                  <span className="euiScreenReaderOnly">{step.status}</span>
-                  {step.status === 'complete' && <EuiIcon type="check" color="white" />}
+                <span css={statusCircleCss({ status: stepStatus })} className="eui-textCenter">
+                  <span className="euiScreenReaderOnly">{stepStatus}</span>
+                  {stepStatus === 'complete' && <EuiIcon type="check" color="white" />}
                 </span>
               </EuiFlexItem>
               <EuiFlexItem grow={false}>{step.title}</EuiFlexItem>
@@ -176,7 +156,7 @@ export const HeaderOnboardingButton = ({ http }: { http: HttpStart }) => {
               </EuiAccordion>
 
               {/* Do not show horizontal rule for last item */}
-              {onboardingSteps.length - 1 !== index && <EuiHorizontalRule />}
+              {guideConfig.steps.length - 1 !== index && <EuiHorizontalRule />}
             </div>
           );
         })}
@@ -189,5 +169,9 @@ export const HeaderOnboardingButton = ({ http }: { http: HttpStart }) => {
         </EuiPopoverFooter>
       </div>
     </EuiPopover>
+  ) : (
+    <EuiButton onClick={togglePopover} color="success" fill isDisabled={true}>
+      Guided setup
+    </EuiButton>
   );
 };
