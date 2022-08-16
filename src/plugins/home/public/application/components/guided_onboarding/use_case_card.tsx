@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { EuiCard, EuiText, EuiTitle, EuiImage } from '@elastic/eui';
+import { EuiCard, EuiTitle, EuiImage, EuiButton } from '@elastic/eui';
 
 import { METRIC_TYPE } from '@kbn/analytics';
 import { i18n } from '@kbn/i18n';
@@ -19,6 +19,7 @@ type UseCaseConstants = {
     i18nTexts: {
       title: string;
       description: string;
+      badgeLabel: string;
     };
     logo: {
       altText: string;
@@ -38,6 +39,9 @@ const constants: UseCaseConstants = {
       description: i18n.translate('home.guidedOnboarding.gettingStarted.search.cardDescription', {
         defaultMessage:
           'Create a finely-tuned search experience for your websites, applications, workplace content, and more.',
+      }),
+      badgeLabel: i18n.translate('home.guidedOnboarding.gettingStarted.search.cardBadgeLabel', {
+        defaultMessage: 'Search',
       }),
     },
     logo: {
@@ -62,6 +66,12 @@ const constants: UseCaseConstants = {
             'Get end-to-end observability into your environments by consolidating your logs, metrics, and traces.',
         }
       ),
+      badgeLabel: i18n.translate(
+        'home.guidedOnboarding.gettingStarted.observability.cardBadgeLabel',
+        {
+          defaultMessage: 'Observability',
+        }
+      ),
     },
     logo: {
       altText: i18n.translate('home.guidedOnboarding.gettingStarted.observability.iconName', {
@@ -81,6 +91,9 @@ const constants: UseCaseConstants = {
       description: i18n.translate('home.guidedOnboarding.gettingStarted.security.cardDescription', {
         defaultMessage:
           'Protect your environment against threats by unifying SIEM, endpoint security, and cloud security in one place.',
+      }),
+      badgeLabel: i18n.translate('home.guidedOnboarding.gettingStarted.security.cardBadgeLabel', {
+        defaultMessage: 'Security',
       }),
     },
     logo: {
@@ -129,21 +142,26 @@ export const UseCaseCard = ({ useCase }: UseCaseProps) => {
       </h4>
     </EuiTitle>
   );
-  const description = (
-    <EuiText color="subdued" size="xs">
-      <p>{constants[useCase].i18nTexts.description}</p>
-    </EuiText>
-  );
   return (
     <EuiCard
       display="subdued"
-      textAlign="left"
+      textAlign="center"
       image={<EuiImage src={getImageUrl(useCase)} alt={constants[useCase].logo.altText} />}
       title={title}
-      description={description}
+      description={constants[useCase].i18nTexts.description}
+      betaBadgeProps={{
+        label: constants[useCase].i18nTexts.badgeLabel,
+      }}
       // Used for FS tracking
       data-test-subj={`onboarding--${useCase}UseCaseCard`}
       onClick={onUseCaseSelection}
+      footer={
+        <EuiButton fill>
+          {i18n.translate('home.guidedOnboarding.gettingStarted.useCaseCard.viewGuideButtonLabel', {
+            defaultMessage: 'View guide',
+          })}
+        </EuiButton>
+      }
     />
   );
 };
