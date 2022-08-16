@@ -30,10 +30,11 @@ import {
 
 import type { HttpStart } from '@kbn/core-http-browser';
 
-import { GuideConfig, guidesConfig, StepStatus } from './guides_config';
+import { guidesConfig } from './guides_config';
+import type { GuideConfig, UseCase, StepStatus } from './guides_config';
 
 interface GuidedOnboardingState {
-  active_guide: string;
+  active_guide: UseCase;
   active_step: string;
 }
 
@@ -41,7 +42,7 @@ const getConfig = (state?: GuidedOnboardingState): GuideConfig | undefined => {
   if (!state) {
     return undefined;
   }
-  return guidesConfig.find((guide) => guide.useCase === state.active_guide);
+  return guidesConfig[state.active_guide];
 };
 
 const getStepStatus = (stepIndex: number, activeStep?: string): StepStatus => {
