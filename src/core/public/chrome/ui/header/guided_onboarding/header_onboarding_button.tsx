@@ -102,25 +102,21 @@ export const HeaderOnboardingButton = ({ http }: { http: HttpStart }) => {
       anchorPosition="downRight"
       hasArrow={false}
       offset={10}
+      panelPaddingSize="l"
     >
       <EuiPopoverTitle>
-        <EuiFlexGroup direction="column" gutterSize="s" alignItems="baseline">
-          <EuiFlexItem grow={false}>
-            <EuiButtonEmpty
-              onClick={() => {}}
-              iconSide="left"
-              iconType="arrowLeft"
-              isDisabled={true}
-            >
-              Back to guides
-            </EuiButtonEmpty>
-          </EuiFlexItem>
-          <EuiFlexItem grow={false}>
-            <EuiTitle size="s">
-              <h3>{guideConfig?.title}</h3>
-            </EuiTitle>
-          </EuiFlexItem>
-        </EuiFlexGroup>
+        <EuiButtonEmpty
+          onClick={() => {}}
+          iconSide="left"
+          iconType="arrowLeft"
+          isDisabled={true}
+          flush="left"
+        >
+          Back to guides
+        </EuiButtonEmpty>
+        <EuiTitle size="m">
+          <h3>{guideConfig?.title}</h3>
+        </EuiTitle>
       </EuiPopoverTitle>
 
       <div css={popoverContainerCss}>
@@ -128,8 +124,9 @@ export const HeaderOnboardingButton = ({ http }: { http: HttpStart }) => {
           <p>{guideConfig?.description}</p>
         </EuiText>
         <EuiSpacer />
+        <EuiHorizontalRule />
         <EuiProgress label="Progress" value={40} max={100} size="l" valueText />
-        <EuiSpacer />
+        <EuiSpacer size="xl" />
         {guideConfig?.steps.map((step, index) => {
           const accordionId = htmlIdGenerator(`accordion${index}`)();
 
