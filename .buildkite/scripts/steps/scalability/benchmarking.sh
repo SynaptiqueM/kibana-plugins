@@ -25,7 +25,7 @@ HASH=`cat gcs_artefacts/LATEST`
 echo "--- downloading latest artefacts from single user performance run"
 gsutil cp -r "$GCS_BUCKET/$HASH" gcs_artefacts/
 
-ls -la
+ls -la gcs_artefacts
 
 echo "--- creating $KIBANA_BUILD_LOCATION & unziping kibana build"
 
