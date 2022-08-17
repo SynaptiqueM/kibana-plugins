@@ -31,6 +31,7 @@ import type {
   ChromeHelpExtension,
   InternalChromeStart,
   ChromeUserBanner,
+  OnboardingGuide,
 } from './types';
 
 export type { ChromeNavControls, ChromeRecentlyAccessed, ChromeDocTitle };
@@ -113,6 +114,12 @@ export class ChromeService {
     const customNavLink$ = new BehaviorSubject<ChromeNavLink | undefined>(undefined);
     const helpSupportUrl$ = new BehaviorSubject<string>(KIBANA_ASK_ELASTIC_LINK);
     const isNavDrawerLocked$ = new BehaviorSubject(localStorage.getItem(IS_LOCKED_KEY) === 'true');
+
+    const { state: defaultOnboardingGuide } = await http.get<{
+      state: OnboardingGuide;
+    }>('/api/guided_onboarding/state');
+
+    const onboardingGuide$ = new BehaviorSubject<OnboardingGuide>(defaultOnboardingGuide);
 
     const getKbnVersionClass = () => {
       // we assume that the version is valid and has the form 'X.X.X'
@@ -210,6 +217,7 @@ export class ChromeService {
           badge$={badge$.pipe(takeUntil(this.stop$))}
           basePath={http.basePath}
           breadcrumbs$={breadcrumbs$.pipe(takeUntil(this.stop$))}
+          onboardingGuide$={onboardingGuide$.pipe(takeUntil(this.stop$))}
           breadcrumbsAppendExtension$={breadcrumbsAppendExtension$.pipe(takeUntil(this.stop$))}
           customNavLink$={customNavLink$.pipe(takeUntil(this.stop$))}
           kibanaDocLink={docLinks.links.kibana.guide}
@@ -252,6 +260,12 @@ export class ChromeService {
         breadcrumbsAppendExtension?: ChromeBreadcrumbsAppendExtension
       ) => {
         breadcrumbsAppendExtension$.next(breadcrumbsAppendExtension);
+      },
+
+      getOnboardingGuide$: () => onboardingGuide$.pipe(takeUntil(this.stop$)),
+
+      setOnboardingGuide: (newOnboardingGuide: OnboardingGuide) => {
+        onboardingGuide$.next(newOnboardingGuide);
       },
 
       getHelpExtension$: () => helpExtension$.pipe(takeUntil(this.stop$)),

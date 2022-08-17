@@ -26,6 +26,12 @@ export interface ChromeBadge {
 export type ChromeBreadcrumb = EuiBreadcrumb;
 
 /** @public */
+export interface OnboardingGuide {
+  active_guide: 'observability' | 'security' | 'search';
+  active_step: number;
+}
+
+/** @public */
 export interface ChromeBreadcrumbsAppendExtension {
   content: MountPoint<HTMLDivElement>;
 }
@@ -135,6 +141,16 @@ export interface ChromeStart {
   setBreadcrumbsAppendExtension(
     breadcrumbsAppendExtension?: ChromeBreadcrumbsAppendExtension
   ): void;
+
+  /**
+   * Get an observable of the current onboarding guide config
+   */
+  getOnboardingGuide$(): Observable<OnboardingGuide>;
+
+  /**
+   * Update the current onboarding guide config
+   */
+  setOnboardingGuide(guidedSetup: OnboardingGuide): void;
 
   /**
    * Get an observable of the current custom nav link
