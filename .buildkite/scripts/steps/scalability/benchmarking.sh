@@ -4,7 +4,8 @@ set -euo pipefail
 
 source .buildkite/scripts/common/util.sh
 
-.buildkite/scripts/bootstrap.sh
+#.buildkite/scripts/bootstrap.sh
+yarn kbn bootstrap
 
 # unset env vars defined in other parts of CI for automatic APM collection of
 # Kibana. We manage APM config in our FTR config and performance service, and
