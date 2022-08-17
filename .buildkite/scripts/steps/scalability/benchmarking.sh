@@ -6,24 +6,26 @@ source .buildkite/scripts/common/util.sh
 
 .buildkite/scripts/bootstrap.sh
 
+SCALABILITY_ARTIFACTS_LOCATION="$WORKSPACE/gcs_artefacts"
+GCS_BUCKET="gs://kibana-performance/scalability-tests"
+
 # These tests are running on static workers so we have to make sure we delete previous build of Kibana
 rm -rf "$KIBANA_BUILD_LOCATION"
-cd "$WORKSPACE"
-rm -rf gcs_artefacts
+rm -rf "$SCALABILITY_ARTIFACTS_LOCATION"
 
-ls -la
+mkdir -p "$SCALABILITY_ARTIFACTS_LOCATION"
 
 echo "--- downloading latest hash"
 
-GCS_BUCKET="gs://kibana-performance/scalability-tests"
-mkdir gcs_artefacts
-gsutil cp "$GCS_BUCKET/LATEST" gcs_artefacts/
-HASH=`cat gcs_artefacts/LATEST`
+gsutil cp "$GCS_BUCKET/LATEST" "$SCALABILITY_ARTIFACTS_LOCATION/"
+HASH=`cat $SCALABILITY_ARTIFACTS_LOCATION/LATEST`
 
 echo "--- downloading latest artefacts from single user performance run"
-gsutil cp -r "$GCS_BUCKET/$HASH" gcs_artefacts/
+gsutil cp -r "$GCS_BUCKET/$HASH" "$SCALABILITY_ARTIFACTS_LOCATION/"
 
-ls -la "gcs_artefacts/$HASH"
+#ls -la "gcs_artefacts/$HASH"
+
+cd "$WORKSPACE"
 
 echo "--- creating $KIBANA_BUILD_LOCATION & unziping kibana build"
 
