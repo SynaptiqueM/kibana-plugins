@@ -25,16 +25,16 @@ HASH=`cat gcs_artefacts/LATEST`
 echo "--- downloading latest artefacts from single user performance run"
 gsutil cp -r "$GCS_BUCKET/$HASH" gcs_artefacts/
 
-ls -la gcs_artefacts
+ls -la "gcs_artefacts/$HASH"
 
 echo "--- creating $KIBANA_BUILD_LOCATION & unziping kibana build"
 
 mkdir -p "$KIBANA_BUILD_LOCATION"
-tar -xzf gcs_artefacts/kibana-default.tar.gz -C "$KIBANA_BUILD_LOCATION" --strip=1
+tar -xzf "gcs_artefacts/$HASH/kibana-default.tar.gz" -C "$KIBANA_BUILD_LOCATION" --strip=1
 
 cd "$KIBANA_DIR"
 
-tar -xzf ../gcs_artefacts/kibana-default-plugins.tar.gz
+tar -xzf "../gcs_artefacts/$HASH/kibana-default-plugins.tar.gz"
 
 # unset env vars defined in other parts of CI for automatic APM collection of
 # Kibana. We manage APM config in our FTR config and performance service, and
@@ -65,7 +65,9 @@ echo "--- Cloning kibana-load-testing repo and preparing workspace"
 # KIBANA_LOAD_TESTING_GIT_COMMIT="$(git rev-parse HEAD)"
 # export KIBANA_LOAD_TESTING_GIT_COMMIT
 
-tar -xzf ../gcs_artefacts/scalability_traces.tar.gz
+tar -xzf "../gcs_artefacts/$HASH/scalability_traces.tar.gz"
+
+rm -rf ../gcs_artefacts
 
 export SCALABILITY_JOURNEYS_ROOT_PATH="$KIBANA_DIR/scalability_traces/server"
 
