@@ -28,7 +28,7 @@ import {
   EuiSelect,
 } from '@elastic/eui';
 
-import type { ChromeStart, CoreStart } from '@kbn/core/public';
+import { CoreStart } from '@kbn/core/public';
 import { NavigationPublicPluginStart } from '@kbn/navigation-plugin/public';
 
 import { PLUGIN_ID, PLUGIN_NAME } from '../../common';
@@ -38,7 +38,6 @@ interface GuidedOnboardingAppDeps {
   notifications: CoreStart['notifications'];
   http: CoreStart['http'];
   navigation: NavigationPublicPluginStart;
-  chrome: ChromeStart;
 }
 
 export const GuidedOnboardingApp = ({
@@ -46,7 +45,6 @@ export const GuidedOnboardingApp = ({
   notifications,
   http,
   navigation,
-  chrome,
 }: GuidedOnboardingAppDeps) => {
   // Use React hooks to manage state.
   const [selectedGuide, setSelectedGuide] = useState<string | undefined>(undefined);
@@ -67,19 +65,15 @@ export const GuidedOnboardingApp = ({
   };
 
   const sendUpdateRequest = () => {
-    const newGuideConfig = {
-      active_guide: selectedGuide,
-      active_step: selectedStep,
-    };
     // Use the core http service to make a response to the server API.
     http
       .put('/api/guided_onboarding/state', {
-        body: JSON.stringify(newGuideConfig),
+        body: JSON.stringify({
+          active_guide: selectedGuide,
+          active_step: selectedStep,
+        }),
       })
       .then((res) => {
-        // For now, updating the component state
-        // Ultimately this method would also update the SO
-        chrome.setOnboardingGuide(newGuideConfig);
         // Use the core notifications service to display a success message.
         notifications.toasts.addSuccess(
           i18n.translate('guidedOnboarding.dataUpdated', {

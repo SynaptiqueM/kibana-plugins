@@ -37,7 +37,6 @@ import type {
   ChromeBreadcrumbsAppendExtension,
   ChromeHelpExtension,
   ChromeUserBanner,
-  OnboardingGuide,
 } from '../../types';
 import type { OnIsLockedUpdate } from '.';
 import { CollapsibleNav } from './collapsible_nav';
@@ -58,7 +57,6 @@ export interface HeaderProps {
   badge$: Observable<ChromeBadge | undefined>;
   breadcrumbs$: Observable<ChromeBreadcrumb[]>;
   breadcrumbsAppendExtension$: Observable<ChromeBreadcrumbsAppendExtension | undefined>;
-  onboardingGuide$: Observable<OnboardingGuide>;
   customNavLink$: Observable<ChromeNavLink | undefined>;
   homeHref: string;
   isVisible$: Observable<boolean>;
@@ -145,10 +143,7 @@ export function Header({
                   <EuiHideFor sizes={['m', 'l', 'xl']}>
                     <HeaderNavControls navControls$={observables.navControlsCenter$} />
                   </EuiHideFor>,
-                  <HeaderOnboardingButton
-                    http={http}
-                    onboardingGuide$={observables.onboardingGuide$}
-                  />,
+                  <HeaderOnboardingButton http={http} />,
                   <HeaderHelpMenu
                     helpExtension$={observables.helpExtension$}
                     helpSupportUrl$={observables.helpSupportUrl$}

@@ -6,7 +6,7 @@
  * Side Public License, v 1.
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { css } from '@emotion/react';
 import {
   EuiPopover,
@@ -28,32 +28,24 @@ import {
   EuiTitle,
 } from '@elastic/eui';
 
-import { Observable } from 'rxjs';
-import useObservable from 'react-use/lib/useObservable';
 import type { HttpStart } from '@kbn/core-http-browser';
 
 import { guidesConfig } from './guides_config';
-import type { GuideConfig, StepStatus } from './guides_config';
-import type { OnboardingGuide } from '../../../types';
+import type { GuideConfig, UseCase, StepStatus } from './guides_config';
 
-// interface GuidedOnboardingState {
-//   active_guide: UseCase;
-//   active_step: string;
-// }
-
-interface Props {
-  http: HttpStart;
-  onboardingGuide$: Observable<OnboardingGuide>;
+interface GuidedOnboardingState {
+  active_guide: UseCase;
+  active_step: string;
 }
 
-const getConfig = (state?: OnboardingGuide): GuideConfig | undefined => {
+const getConfig = (state?: GuidedOnboardingState): GuideConfig | undefined => {
   if (!state) {
     return undefined;
   }
   return guidesConfig[state.active_guide];
 };
 
-const getStepStatus = (stepIndex: number, activeStep?: number): StepStatus => {
+const getStepStatus = (stepIndex: number, activeStep?: string): StepStatus => {
   if (isNaN(Number(activeStep))) {
     return 'incomplete';
   }
@@ -63,19 +55,17 @@ const getStepStatus = (stepIndex: number, activeStep?: number): StepStatus => {
   return Number(activeStep) > stepIndex + 1 ? 'complete' : 'incomplete';
 };
 
-export const HeaderOnboardingButton = ({ onboardingGuide$ }: Props) => {
+export const HeaderOnboardingButton = ({ http }: { http: HttpStart }) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const onboardingGuide = useObservable(onboardingGuide$);
+  const [guidedOnboardingState, setGuidedOnboardingState] = useState<
+    GuidedOnboardingState | undefined
+  >(undefined);
 
-  // const [guidedOnboardingState, setGuidedOnboardingState] = useState<
-  //   GuidedOnboardingState | undefined
-  // >(undefined);
-
-  // useEffect(() => {
-  //   http.get<{ state: GuidedOnboardingState }>('/api/guided_onboarding/state').then((res) => {
-  //     setGuidedOnboardingState(res.state);
-  //   });
-  // }, [http, setGuidedOnboardingState]);
+  useEffect(() => {
+    http.get<{ state: GuidedOnboardingState }>('/api/guided_onboarding/state').then((res) => {
+      setGuidedOnboardingState(res.state);
+    });
+  }, [http, setGuidedOnboardingState]);
 
   const { euiTheme } = useEuiTheme();
 
@@ -99,7 +89,7 @@ export const HeaderOnboardingButton = ({ onboardingGuide$ }: Props) => {
     `}
   `;
 
-  const guideConfig = getConfig(onboardingGuide);
+  const guideConfig = getConfig(guidedOnboardingState);
 
   return guideConfig ? (
     <EuiPopover
@@ -141,7 +131,7 @@ export const HeaderOnboardingButton = ({ onboardingGuide$ }: Props) => {
         {guideConfig?.steps.map((step, index) => {
           const accordionId = htmlIdGenerator(`accordion${index}`)();
 
-          const stepStatus = getStepStatus(index, onboardingGuide?.active_step);
+          const stepStatus = getStepStatus(index, guidedOnboardingState?.active_step);
           const buttonContent = (
             <EuiFlexGroup gutterSize="s">
               <EuiFlexItem grow={false}>
