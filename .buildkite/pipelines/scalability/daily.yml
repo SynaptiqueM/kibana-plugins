@@ -1,5 +1,4 @@
 steps:
-
   - label: ':muscle: Scalability Tests'
     command: .buildkite/scripts/steps/scalability/benchmarking.sh
     agents:
