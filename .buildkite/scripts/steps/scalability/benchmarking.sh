@@ -8,10 +8,8 @@ source .buildkite/scripts/common/util.sh
 
 # These tests are running on static workers so we have to make sure we delete previous build of Kibana
 rm -rf "$KIBANA_BUILD_LOCATION"
-
-echo "--- cd to WORKSPACE"
-
 cd "$WORKSPACE"
+rm -rf gcs_artefacts
 
 ls -la
 
