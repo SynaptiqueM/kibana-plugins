@@ -5,19 +5,34 @@
  * 2.0.
  */
 
+import ReactDOM from 'react-dom';
+import React from 'react';
+import * as Rx from 'rxjs';
 import { i18n } from '@kbn/i18n';
-import { AppMountParameters, CoreSetup, CoreStart, Plugin } from '@kbn/core/public';
+import { I18nProvider } from '@kbn/i18n-react';
+import {
+  AppMountParameters,
+  CoreSetup,
+  CoreStart,
+  Plugin,
+  CoreTheme,
+  HttpStart,
+} from '@kbn/core/public';
+import { KibanaThemeProvider } from '@kbn/kibana-react-plugin/public';
+
 import {
   GuidedOnboardingPluginSetup,
   GuidedOnboardingPluginStart,
   AppPluginStartDependencies,
 } from './types';
 import { PLUGIN_NAME } from '../common';
+import { GuidedOnboardingButton } from './components';
 
 export class GuidedOnboardingPlugin
   implements Plugin<GuidedOnboardingPluginSetup, GuidedOnboardingPluginStart>
 {
   public setup(core: CoreSetup): GuidedOnboardingPluginSetup {
+    // TODO remove this eventually
     // Register an application into the side navigation menu
     core.application.register({
       id: 'guidedOnboarding',
@@ -46,8 +61,25 @@ export class GuidedOnboardingPlugin
   }
 
   public start(core: CoreStart): GuidedOnboardingPluginStart {
+    core.chrome.navControls.registerRight({
+      order: 1000,
+      mount: (target) => this.mount(target, core.theme.theme$, core.http),
+    });
+
     return {};
   }
 
   public stop() {}
+
+  private mount(targetDomElement: HTMLElement, theme$: Rx.Observable<CoreTheme>, http: HttpStart) {
+    ReactDOM.render(
+      <KibanaThemeProvider theme$={theme$}>
+        <I18nProvider>
+          <GuidedOnboardingButton http={http} />
+        </I18nProvider>
+      </KibanaThemeProvider>,
+      targetDomElement
+    );
+    return () => ReactDOM.unmountComponentAtNode(targetDomElement);
+  }
 }

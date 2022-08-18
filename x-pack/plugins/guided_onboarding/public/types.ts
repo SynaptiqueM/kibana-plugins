@@ -16,3 +16,24 @@ export interface GuidedOnboardingPluginStart {}
 export interface AppPluginStartDependencies {
   navigation: NavigationPublicPluginStart;
 }
+
+export type UseCase = 'observability' | 'security' | 'search';
+export type StepStatus = 'incomplete' | 'complete' | 'in_progress';
+
+export interface StepConfig {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  status?: StepStatus;
+}
+
+export interface GuideConfig {
+  title: string;
+  description: string;
+  docs?: {
+    text: string;
+    url: string;
+  };
+  steps: StepConfig[];
+}

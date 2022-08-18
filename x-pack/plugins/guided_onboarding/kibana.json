@@ -9,6 +9,9 @@
   "description": "Guided Onboarding",
   "server": true,
   "ui": true,
+  "requiredBundles": [
+    "kibanaReact"
+  ],
   "requiredPlugins": ["navigation"],
   "optionalPlugins": []
 }

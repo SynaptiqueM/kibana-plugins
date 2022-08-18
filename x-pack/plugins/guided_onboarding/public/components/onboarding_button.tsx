@@ -1,12 +1,11 @@
 /*
  * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
  * or more contributor license agreements. Licensed under the Elastic License
- * 2.0 and the Server Side Public License, v 1; you may not use this file except
- * in compliance with, at your election, the Elastic License 2.0 or the Server
- * Side Public License, v 1.
+ * 2.0; you may not use this file except in compliance with the Elastic License
+ * 2.0.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { css } from '@emotion/react';
 import {
   EuiPopover,
@@ -30,12 +29,16 @@ import {
 
 import type { HttpStart } from '@kbn/core-http-browser';
 
-import { guidesConfig } from './guides_config';
-import type { GuideConfig, UseCase, StepStatus } from './guides_config';
+import { guidesConfig } from '../constants';
+import type { GuideConfig, StepStatus, UseCase } from '../types';
 
 interface GuidedOnboardingState {
   active_guide: UseCase;
   active_step: string;
+}
+
+interface Props {
+  http: HttpStart;
 }
 
 const getConfig = (state?: GuidedOnboardingState): GuideConfig | undefined => {
@@ -55,8 +58,9 @@ const getStepStatus = (stepIndex: number, activeStep?: string): StepStatus => {
   return Number(activeStep) > stepIndex + 1 ? 'complete' : 'incomplete';
 };
 
-export const HeaderOnboardingButton = ({ http }: { http: HttpStart }) => {
+export const GuidedOnboardingButton = ({ http }: Props) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
   const [guidedOnboardingState, setGuidedOnboardingState] = useState<
     GuidedOnboardingState | undefined
   >(undefined);
